@@ -1,9 +1,3 @@
-'''
-Fashion MNIST
-'''
-
-
-
 from __future__ import print_function
 
 import keras
@@ -17,7 +11,7 @@ batch_size = 128
 num_classes = 10
 epochs = 20
 
-# the data, shuffled and split between train and test sets
+#The data, shuffled and split between train and test sets
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 x_train = x_train.reshape(60000, 784)

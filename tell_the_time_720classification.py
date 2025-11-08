@@ -2,20 +2,17 @@ import tensorflow as tf
 import keras
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-'''
-Constants
-'''
 IMG_HEIGHT, IMG_WIDTH = 75, 75
 EPOCHS = 100
 BATCH_SIZE = 128
 NUM_CLASSES = 720  
 
-'''
-Data pre-processing
-'''
-data_path = "/home/przemelates/.vscode/deep_learning_1/images.npy"
-labels_path = "/home/przemelates/.vscode/deep_learning_1/labels.npy"
+thisProjectDir = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
+data_path = os.path.join(thisProjectDir, "images.npy")
+labels_path = os.path.join(thisProjectDir,"labels.npy")
 
 data = np.load(data_path)
 labels = np.load(labels_path)
@@ -49,9 +46,6 @@ val_dataset = val_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 test_dataset = test_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 
 
-'''
-Model architecture 
-'''
 model = keras.Sequential([
 
   
@@ -133,10 +127,6 @@ history = model.fit(
     callbacks=callbacks,
     verbose=1
 )
-
-'''
-Evaluation
-'''
 
 score = model.evaluate(test_dataset, verbose=1)
 print(f'\nTest Results:')

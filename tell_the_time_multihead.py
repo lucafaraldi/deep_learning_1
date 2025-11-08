@@ -2,21 +2,18 @@ import tensorflow as tf
 import keras
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-'''
-Constants
-'''
 IMG_HEIGHT, IMG_WIDTH = 75, 75
 EPOCHS = 100
 BATCH_SIZE = 128
 NUM_HOUR_CLASSES = 12  
 NUM_MINUTE_CLASSES = 60  
 
-'''
-Data pre-processing
-'''
-data_path = "/home/przemelates/.vscode/deep_learning_1/images.npy"
-labels_path = "/home/przemelates/.vscode/deep_learning_1/labels.npy"
+thisProjectDir = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
+data_path = os.path.join(thisProjectDir, "images.npy")
+labels_path = os.path.join(thisProjectDir,"labels.npy")
 
 data = np.load(data_path)
 labels = np.load(labels_path)
@@ -60,9 +57,7 @@ print(f"Training samples: {train_size}")
 print(f"Validation samples: {val_size}")
 print(f"Test samples: {total_size - train_size - val_size}")
 
-'''
-Multi-head model architecture
-'''
+#Multi-head model architecture
 #Shared convolutional base
 inputs = keras.layers.Input(shape=(IMG_HEIGHT, IMG_WIDTH, 1))
 
@@ -165,9 +160,6 @@ history = model.fit(
     verbose=1
 )
 
-'''
-Evaluation
-'''
 #Evaluate on test set
 scores = model.evaluate(test_dataset, verbose=1)
 print(f'\nTest Results:')
@@ -200,9 +192,7 @@ print(f'Exact match (both correct): {exact_match:.4f} ({exact_match*100:.2f}%)')
 
 #Calculate common sense time difference accuracy
 def calculate_time_difference_minutes(true_hours, true_minutes, pred_hours, pred_minutes):
-    """
-    Calculate absolute time difference in minutes, handling circular clock arithmetic.
-    """
+    #Calculate absolute time difference in minutes
     #Convert to total minutes since midnight
     true_total_minutes = true_hours * 60 + true_minutes
     pred_total_minutes = pred_hours * 60 + pred_minutes
@@ -210,7 +200,7 @@ def calculate_time_difference_minutes(true_hours, true_minutes, pred_hours, pred
     #Calculate raw difference
     diff = np.abs(true_total_minutes - pred_total_minutes)
     
-    #Handle wrap-around (e.g., 11:50 vs 00:10)
+    #Handle wrap-around (11:50 vs 00:10)
     diff = np.minimum(diff, 720 - diff)
     
     return diff
@@ -223,7 +213,7 @@ def format_time_difference(minutes):
 
 time_diffs = calculate_time_difference_minutes(true_hours, true_minutes, pred_hours, pred_minutes)
 
-# Calculate average error in hours and minutes format
+#Calculate average error in hours and minutes format
 avg_error_hours, avg_error_mins = format_time_difference(time_diffs.mean())
 median_error_hours, median_error_mins = format_time_difference(np.median(time_diffs))
 
@@ -241,9 +231,6 @@ print(f'Average hour error: {hour_errors.mean():.2f} hours')
 print(f'Average minute error: {minute_errors.mean():.2f} minutes')
 
 def plot_learning_curves(history, save_path='learning_curves_multihead.png'):
-    """
-    Plot training and validation learning curves.
-    """
 
     metrics = [key for key in history.history.keys() if not key.startswith('val_')]
     

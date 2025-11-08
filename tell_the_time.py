@@ -2,18 +2,16 @@ import tensorflow as tf
 import keras
 import numpy as np
 import matplotlib.pyplot as plt
-'''
-Constants
-'''
+import os
+
 IMG_HEIGHT, IMG_WIDTH = 75,75
 EPOCHS = 100
 BATCH_SIZE = 128
 
-'''
-Data pre-processing
-'''
-data_path = "/home/przemelates/.vscode/deep_learning_1/images.npy"
-labels_path = "/home/przemelates/.vscode/deep_learning_1/labels.npy"
+thisProjectDir = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
+data_path = os.path.join(thisProjectDir, "images.npy")
+labels_path = os.path.join(thisProjectDir,"labels.npy")
 
 data = np.load(data_path)
 labels = np.load(labels_path)
@@ -29,7 +27,7 @@ if len(data.shape) == 3:
 hour_angles = (labels[:, 0] % 12) * 30.0  # 0-330
 minute_angles = labels[:, 1] * 6.0  # 0-354
 
-#Convert angles to sin/cos (handles circularity)
+#Convert angles to sin/cos 
 hour_sin = np.sin(np.radians(hour_angles))
 hour_cos = np.cos(np.radians(hour_angles))
 minute_sin = np.sin(np.radians(minute_angles))
@@ -42,25 +40,21 @@ labels_circular = np.stack([hour_sin, hour_cos, minute_sin, minute_cos], axis=1)
 dataset = tf.data.Dataset.from_tensor_slices((data, labels_circular))
 dataset = dataset.shuffle(buffer_size=len(data), seed=42, reshuffle_each_iteration=False)
 
-#Calculate split sizes
+#Calculate split sizes and split the dataset
 total_size = len(data)
 train_size = int(0.8 * total_size)
 val_size = int(0.1 * total_size)
 
-#Split the dataset
 train_dataset = dataset.take(train_size)
 remaining = dataset.skip(train_size)
 val_dataset = remaining.take(val_size)
 test_dataset = remaining.skip(val_size)
 
-#Batch and prefetch for performance
+#Batch and prefetch
 train_dataset = train_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 val_dataset = val_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 test_dataset = test_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 
-'''
-Model architecture 
-'''
 model = keras.Sequential([
     
     keras.layers.Conv2D(64, (3, 3), padding='same', input_shape=(IMG_HEIGHT, IMG_WIDTH, 1)),
@@ -127,11 +121,8 @@ history = model.fit(
     verbose=1
 )
 
-'''
-Evaluation with proper angle conversion
-'''
 def convert_predictions_to_time(predictions):
-    """Convert sin/cos predictions back to hour and minute"""
+    #Convert sin/cos predictions back to hour and minute
     hour_sin, hour_cos, minute_sin, minute_cos = predictions[:, 0], predictions[:, 1], predictions[:, 2], predictions[:, 3]
     
     #Convert back to angles
@@ -167,10 +158,9 @@ print(f'Exact Match (both correct): {exact_match:.2%}')
 
 #Calculate "common sense" time difference accuracy
 def calculate_time_difference_minutes(true_hours, true_minutes, pred_hours, pred_minutes):
-    """
-    Calculate absolute time difference in minutes, handling circular clock arithmetic.
-    For example: 11:50 to 12:10 = 20 minutes (not 11 hours 40 minutes)
-    """
+    #Calculate absolute time difference in minutes, handling circular clock arithmetic.
+    #For example: 11:50 to 12:10 = 20 minutes (not 11 hours 40 minutes)
+    
     #Convert to total minutes since midnight
     true_total_minutes = true_hours * 60 + true_minutes
     pred_total_minutes = pred_hours * 60 + pred_minutes
@@ -185,7 +175,7 @@ def calculate_time_difference_minutes(true_hours, true_minutes, pred_hours, pred
     return diff
 
 def format_time_difference(minutes):
-    """Convert minutes to 'X hours Y minutes' format"""
+    #Convert minutes to 'X hours Y minutes' format
     hours = int(minutes // 60)
     mins = int(minutes % 60)
     return hours, mins
@@ -196,7 +186,7 @@ time_diffs = calculate_time_difference_minutes(true_hours, true_minutes, pred_ho
 avg_error_hours, avg_error_mins = format_time_difference(time_diffs.mean())
 median_error_hours, median_error_mins = format_time_difference(np.median(time_diffs))
 
-print(f'\n"Common Sense" Time Difference Accuracy:')
+print(f'\nTime Difference Accuracy:')
 print(f'Average error: {avg_error_hours} hour(s) and {avg_error_mins} minute(s)')
 print(f'  (Total: {time_diffs.mean():.2f} minutes)')
 print(f'Median error: {median_error_hours} hour(s) and {median_error_mins} minute(s)')
@@ -205,9 +195,6 @@ print(f'Std deviation: {time_diffs.std():.2f} minutes')
 
 
 def plot_learning_curves(history, save_path='learning_curves_regression.png'):
-    """
-    Plot training and validation learning curves.
-    """
 
     metrics = [key for key in history.history.keys() if not key.startswith('val_')]
     

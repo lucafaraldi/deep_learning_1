@@ -1,7 +1,3 @@
-'''
-CIFAR-10 CNN
-'''
-
 from __future__ import print_function
 import keras
 from keras.datasets import cifar10
@@ -14,9 +10,7 @@ batch_size = 128
 num_classes = 10
 epochs = 20
 
-
 img_rows, img_cols = 32,32
-
 
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
@@ -43,7 +37,6 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
 
-
 model.add(Conv2D(32, kernel_size=(3, 3), padding='same', input_shape=input_shape))
 model.add(BatchNormalization())
 model.add(Activation('silu'))
@@ -52,7 +45,6 @@ model.add(BatchNormalization())
 model.add(Activation('silu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
-
 
 model.add(Conv2D(64, kernel_size=(3, 3), padding='same'))
 model.add(BatchNormalization())

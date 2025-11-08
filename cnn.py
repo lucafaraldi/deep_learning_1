@@ -1,7 +1,3 @@
-'''
-Fashion MNIST CNN
-'''
-
 from __future__ import print_function
 import keras
 from keras.datasets import fashion_mnist
